@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "GitLab HTML Preview",
+  "version": "1.0.0",
+  "description": "GitLab 저장소의 .html 파일을 소스 대신 렌더링해서 보여주고, 전체화면으로 볼 수 있게 한다.",
+  "content_scripts": [
+    {
+      "matches": ["https://gitlab.bodoc.co.kr/*", "https://gitlab.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

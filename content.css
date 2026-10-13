@@ -1,0 +1,102 @@
+.ghp-bar {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  z-index: 2147483000;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(20, 20, 24, 0.92);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font: 500 12px/1 -apple-system, "Pretendard", sans-serif;
+}
+.ghp-bar button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: transparent;
+  color: #e8e8ec;
+  cursor: pointer;
+}
+.ghp-bar button:hover { background: rgba(255, 255, 255, 0.12); }
+.ghp-bar button.ghp-active { background: #3b82f6; color: #fff; }
+.ghp-bar button:disabled { opacity: 0.4; cursor: default; }
+
+.ghp-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 70vh;
+  height: calc(100vh - 220px);
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ghp-wrap:fullscreen {
+  border: 0;
+  border-radius: 0;
+  height: 100vh;
+  min-height: 100vh;
+}
+.ghp-wrap iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+.ghp-status {
+  padding: 24px;
+  color: #666;
+  font: 13px/1.5 -apple-system, "Pretendard", sans-serif;
+}
+.ghp-hidden { display: none !important; }
+
+/* diff 페이지 */
+.ghp-inline-btn {
+  appearance: none;
+  border: 1px solid #3b82f6;
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-right: 8px;
+  background: #fff;
+  color: #3b82f6;
+  font: 500 12px/1 -apple-system, "Pretendard", sans-serif;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.ghp-inline-btn:hover { background: #eff6ff; }
+.ghp-inline-btn.ghp-active { background: #3b82f6; color: #fff; }
+
+.ghp-wrap.ghp-diff {
+  height: 75vh;
+  min-height: 480px;
+  border-radius: 0 0 4px 4px;
+  border-top: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ghp-wrap.ghp-diff iframe { flex: 1; height: auto; }
+.ghp-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #dcdcde;
+  background: #fafafa;
+  font: 500 12px/1 -apple-system, "Pretendard", sans-serif;
+}
+.ghp-toolbar button {
+  appearance: none;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  padding: 5px 10px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+}
+.ghp-toolbar button:hover { background: #f0f0f0; }
+.ghp-toolbar button.ghp-active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+.ghp-wrap.ghp-diff:fullscreen .ghp-toolbar { position: sticky; top: 0; }
+.ghp-wrap.ghp-diff .ghp-status { padding: 8px 12px; border-bottom: 1px solid #eee; }
