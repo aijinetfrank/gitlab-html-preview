@@ -1,7 +1,9 @@
-// GitLab HTML Preview — content script
+// HTML Preview Anywhere — GitLab 모드 (gitlab.com 및 self-hosted)
 // 1) blob 페이지: .html 파일이면 소스 대신 렌더링 (우측 상단 플로팅 바)
 // 2) commit / MR diff 페이지: .html 파일마다 헤더에 "미리보기" 버튼 → 변경 후/전 렌더링
-(() => {
+// 렌더링은 공통 모듈(preview.js)의 격리 뷰어에서 한다.
+window.__ghpGitLab = () => {
+  const { makeFrame, openInNewTab, button, toggleFullscreen, fetchText, fetchJson } = window.__ghp;
   const MODE_KEY = "ghp:mode"; // blob 페이지 기본 모드: "preview" | "source"
   const HTML_RE = /\.html?$/i;
   const CONTENT_SELECTORS = [
@@ -17,45 +19,8 @@
   const rawUrlFor = (ref, path) =>
     `${location.origin}/${projectPath()}/-/raw/${ref}/${path.split("/").map(encodeURIComponent).join("/")}`;
 
-  async function fetchText(url) {
-    const res = await fetch(url, { credentials: "include" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.text();
-  }
-  async function fetchJson(url) {
-    const res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  }
-
-  function makeIframe() {
-    const iframe = document.createElement("iframe");
-    // 같은 origin 권한은 주지 않는다 — 문서 내 스크립트가 GitLab 세션에 손대지 못하게.
-    iframe.setAttribute("sandbox", "allow-scripts allow-popups allow-forms");
-    iframe.setAttribute("referrerpolicy", "no-referrer");
-    return iframe;
-  }
-
-  function openInNewTab(html) {
-    const blob = new Blob([html], { type: "text/html" });
-    window.open(URL.createObjectURL(blob), "_blank");
-  }
-
-  function toggleFullscreen(el) {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
-  }
-
-  function button(label, onClick) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = label;
-    b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); onClick(e); });
-    return b;
-  }
-
   // ---------- 1) blob 페이지 ----------
-  let blob = null; // { wrap, iframe, bar, btnToggle, btnFull, hidden, loaded }
+  let blob = null; // { wrap, frame, bar, btnToggle, btnFull, hidden, loaded }
 
   const isHtmlBlob = () => /\/-\/blob\/.+\.html?$/i.test(location.pathname);
   const blobRawUrl = () =>
@@ -87,7 +52,7 @@
     const status = blob.wrap.querySelector(".ghp-status");
     status.textContent = "불러오는 중…";
     try {
-      blob.iframe.srcdoc = await fetchText(blobRawUrl());
+      blob.frame.render(await fetchText(blobRawUrl()));
       status.remove();
       blob.loaded = true;
     } catch (e) {
@@ -105,8 +70,8 @@
     wrap.className = "ghp-wrap";
     const status = document.createElement("div");
     status.className = "ghp-status";
-    const iframe = makeIframe();
-    wrap.append(status, iframe);
+    const frame = makeFrame();
+    wrap.append(status, frame.iframe);
     holder.insertAdjacentElement("afterend", wrap);
 
     const bar = document.createElement("div");
@@ -121,7 +86,7 @@
     bar.append(btnToggle, btnFull, btnTab);
     document.body.append(bar);
 
-    blob = { wrap, iframe, bar, btnToggle, btnFull, hidden: findBlobContents(), loaded: false };
+    blob = { wrap, frame, bar, btnToggle, btnFull, hidden: findBlobContents(), loaded: false };
     blobSetMode(localStorage.getItem(MODE_KEY) || "preview");
     return true;
   }
@@ -192,8 +157,8 @@
     toolbar.className = "ghp-toolbar";
     const status = document.createElement("div");
     status.className = "ghp-status";
-    const iframe = makeIframe();
-    wrap.append(toolbar, status, iframe);
+    const frame = makeFrame();
+    wrap.append(toolbar, status, frame.iframe);
     header.insertAdjacentElement("afterend", wrap);
 
     const cache = {}; // side → html
@@ -213,7 +178,7 @@
           const p = which === "before" ? (diffFileOldPath(file) || path) : path;
           cache[which] = await fetchText(rawUrlFor(ref, p));
         }
-        iframe.srcdoc = cache[which];
+        frame.render(cache[which]);
         status.classList.add("ghp-hidden");
       } catch (e) {
         // 삭제된 파일: 변경 후가 404면 변경 전 버전으로 대신 보여준다.
@@ -225,7 +190,7 @@
           }
           return;
         }
-        iframe.srcdoc = "";
+        frame.reset();
         status.textContent = `불러오지 못했습니다: ${e.message}`;
       }
     }
@@ -276,4 +241,4 @@
     }
     if (isDiffPage()) diffScan();
   }, 500);
-})();
+};

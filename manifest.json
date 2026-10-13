@@ -1,14 +1,48 @@
 {
   "manifest_version": 3,
-  "name": "GitLab HTML Preview",
-  "version": "1.0.0",
-  "description": "GitLab 저장소의 .html 파일을 소스 대신 렌더링해서 보여주고, 전체화면으로 볼 수 있게 한다.",
-  "content_scripts": [
+  "name": "HTML Preview Anywhere",
+  "version": "2.0.0",
+  "description": "Render HTML source found on any page (code blocks, pasted markup, .html links, GitLab blobs & diffs) in an isolated sandbox. Toggle per site from the toolbar icon.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "HTML Preview Anywhere — toggle on this site",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "sandbox": {
+    "pages": [
+      "viewer.html"
+    ]
+  },
+  "content_security_policy": {
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; child-src 'self' https: http: data: blob:; object-src 'none';"
+  },
+  "web_accessible_resources": [
     {
-      "matches": ["https://gitlab.bodoc.co.kr/*", "https://gitlab.com/*"],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_idle"
+      "resources": [
+        "viewer.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

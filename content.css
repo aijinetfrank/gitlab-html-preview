@@ -100,3 +100,33 @@
 .ghp-toolbar button.ghp-active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
 .ghp-wrap.ghp-diff:fullscreen .ghp-toolbar { position: sticky; top: 0; }
 .ghp-wrap.ghp-diff .ghp-status { padding: 8px 12px; border-bottom: 1px solid #eee; }
+
+/* 범용 모드 (임의 사이트): 소스 자리에 같은 크기로 렌더링 + 패널 안 플로팅 버튼(전체화면·새 탭) */
+.ghp-wrap.ghp-inline {
+  min-height: 0;
+  margin: 4px 0;
+  text-align: left;
+}
+.ghp-wrap.ghp-inline:fullscreen { height: 100vh !important; }
+.ghp-wrap.ghp-inline .ghp-status { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.ghp-bar.ghp-bar-inline {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.ghp-wrap.ghp-inline:hover .ghp-bar-inline { opacity: 1; }
+/* 소스 보기 상태: 블록 앞 높이 0 기준점 + 그 우측 상단에 "미리보기" (패널 버튼과 같은 자리) */
+.ghp-anchor { position: relative; height: 0; overflow: visible; }
+.ghp-anchor .ghp-bar-inline { opacity: 1; }
+/* .html 링크 뒤 버튼 */
+.ghp-wrap.ghp-link {
+  display: inline;
+  min-height: 0;
+  height: auto;
+  width: auto;
+  border: 0;
+  background: transparent;
+  margin-left: 6px;
+}
