@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>HTML Preview Anywhere — 사이트</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 16px; min-width: 420px; color: #1f2937; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  p { margin: 0 0 12px; color: #6b7280; }
+  code { background: #f3f4f6; padding: 0 4px; border-radius: 3px; }
+  form { display: flex; gap: 8px; margin-bottom: 12px; }
+  input { flex: 1; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; }
+  button { padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; font: inherit; cursor: pointer; }
+  button.primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #e5e7eb; }
+  li span { flex: 1; font-family: ui-monospace, monospace; word-break: break-all; }
+  li em { color: #dc2626; font-style: normal; font-size: 12px; }
+  #msg { color: #dc2626; min-height: 1.5em; }
+</style>
+</head>
+<body>
+  <h1>켜진 사이트</h1>
+  <p>매치 패턴으로 넣는다. 예: <code>https://*.google.com/*</code> (google.com 과 모든 서브도메인), <code>https://gitlab.example.com/*</code></p>
+  <form id="add">
+    <input id="pattern" placeholder="https://*.example.com/*" autocomplete="off" spellcheck="false">
+    <button class="primary" type="submit">추가</button>
+  </form>
+  <div id="msg"></div>
+  <ul id="list"></ul>
+  <script src="options.js"></script>
+</body>
+</html>

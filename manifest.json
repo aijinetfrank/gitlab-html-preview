@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "HTML Preview Anywhere",
-  "version": "2.0.0",
-  "description": "Render HTML source found on any page (code blocks, pasted markup, .html links, GitLab blobs & diffs) in an isolated sandbox. Toggle per site from the toolbar icon.",
+  "version": "2.1.0",
+  "description": "Render HTML source found on any page (code blocks, pasted markup, .html links, GitLab blobs & diffs) in an isolated sandbox. Toggle per site from the toolbar icon, or add site patterns in options.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -10,7 +10,8 @@
   },
   "permissions": [
     "scripting",
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
   "optional_host_permissions": [
     "https://*/*",
@@ -18,6 +19,10 @@
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
   },
   "action": {
     "default_title": "HTML Preview Anywhere — toggle on this site",
@@ -33,7 +38,7 @@
     ]
   },
   "content_security_policy": {
-    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; child-src 'self' https: http: data: blob:; object-src 'none';"
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; child-src 'self' https: http: data: blob:; object-src 'none';"
   },
   "web_accessible_resources": [
     {

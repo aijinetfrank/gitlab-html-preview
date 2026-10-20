@@ -52,7 +52,7 @@ window.__ghpGitLab = () => {
     const status = blob.wrap.querySelector(".ghp-status");
     status.textContent = "불러오는 중…";
     try {
-      blob.frame.render(await fetchText(blobRawUrl()));
+      blob.frame.render(await fetchText(blobRawUrl()), blobRawUrl());
       status.remove();
       blob.loaded = true;
     } catch (e) {
@@ -80,7 +80,7 @@ window.__ghpGitLab = () => {
       blobSetMode(blob.wrap.classList.contains("ghp-hidden") ? "preview" : "source"));
     const btnFull = button("전체화면", () => toggleFullscreen(wrap));
     const btnTab = button("새 탭", async () => {
-      try { openInNewTab(await fetchText(blobRawUrl())); }
+      try { openInNewTab(await fetchText(blobRawUrl()), blobRawUrl()); }
       catch (e) { alert(`불러오지 못했습니다: ${e.message}`); }
     });
     bar.append(btnToggle, btnFull, btnTab);
@@ -162,6 +162,7 @@ window.__ghpGitLab = () => {
     header.insertAdjacentElement("afterend", wrap);
 
     const cache = {}; // side → html
+    const urls = {};  // side → raw URL (뷰어가 상대경로 링크를 푸는 기준)
     let side = "after";
 
     async function show(which) {
@@ -176,9 +177,10 @@ window.__ghpGitLab = () => {
           const ref = refs[which];
           if (!ref) throw new Error(which === "before" ? "변경 전 버전이 없습니다 (새 파일)" : "ref 없음");
           const p = which === "before" ? (diffFileOldPath(file) || path) : path;
-          cache[which] = await fetchText(rawUrlFor(ref, p));
+          urls[which] = rawUrlFor(ref, p);
+          cache[which] = await fetchText(urls[which]);
         }
-        frame.render(cache[which]);
+        frame.render(cache[which], urls[which]);
         status.classList.add("ghp-hidden");
       } catch (e) {
         // 삭제된 파일: 변경 후가 404면 변경 전 버전으로 대신 보여준다.
@@ -201,7 +203,7 @@ window.__ghpGitLab = () => {
     const btnTab = button("새 탭", async () => {
       try {
         if (!cache[side]) await show(side);
-        if (cache[side]) openInNewTab(cache[side]);
+        if (cache[side]) openInNewTab(cache[side], urls[side]);
       } catch (e) { alert(`불러오지 못했습니다: ${e.message}`); }
     });
     toolbar.append(btnAfter, btnBefore, btnFull, btnTab);

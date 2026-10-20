@@ -16,7 +16,7 @@ window.__ghpGeneric = () => {
   const logD = (...a) => console.debug("[HTML Preview]", ...a);
 
   // ---------- 패널 ----------
-  function panel(getHtml, extraButtons = []) {
+  function panel(getHtml, extraButtons = [], base = null) {
     const wrap = document.createElement("div");
     wrap.className = "ghp-wrap ghp-inline";
     const status = document.createElement("div");
@@ -31,7 +31,7 @@ window.__ghpGeneric = () => {
         else wrap.requestFullscreen?.();
       }),
       button("새 탭", async () => {
-        try { openInNewTab(await getHtml()); }
+        try { openInNewTab(await getHtml(), base); }
         catch (e) { status.classList.remove("ghp-hidden"); status.textContent = `불러오지 못했습니다: ${e.message}`; }
       }),
     );
@@ -39,7 +39,7 @@ window.__ghpGeneric = () => {
     (async () => {
       status.textContent = "불러오는 중…";
       try {
-        frame.render(await getHtml()); // 캐시 없음 — 지금 내용을 그대로
+        frame.render(await getHtml(), base); // 캐시 없음 — 지금 내용을 그대로
         status.classList.add("ghp-hidden");
       } catch (e) {
         status.textContent = `불러오지 못했습니다: ${e.message}`;
@@ -86,7 +86,7 @@ window.__ghpGeneric = () => {
     let wrap = null;
     const btn = button("미리보기", () => {
       if (wrap) { wrap.remove(); wrap = null; btn.textContent = "미리보기"; return; }
-      wrap = panel(() => fetchText(a.href));
+      wrap = panel(() => fetchText(a.href), [], a.href);
       wrap.style.height = `${Math.round(window.innerHeight * 0.6)}px`;
       holder.insertAdjacentElement("afterend", wrap);
       btn.textContent = "닫기";
