@@ -7,8 +7,9 @@
 window.__ghpGeneric = () => {
   const { makeFrame, openInNewTab, button, fetchText } = window.__ghp;
 
-  const HTML_START = /^\s*(<!doctype\s+html|<html[\s>])/i;
-  const HTML_HINT = /<!doctype\s+html|<html[\s>]/i;
+  // doctype·<html> 을 생략하고 <head> / <meta charset> 으로 시작하는 문서도 HTML5 로 유효하다
+  const HTML_START = /^\s*(<!doctype\s+html|<html[\s>]|<head[\s>]|<meta\s+charset)/i;
+  const HTML_HINT = /<!doctype\s+html|<html[\s>]|<head[\s>]|<meta\s+charset/i;
   const HTML_FILE = /\.html?$/i;
   const MIN_LEN = 40;
   const MIN_H = 240;
