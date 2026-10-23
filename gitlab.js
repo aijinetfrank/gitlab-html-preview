@@ -1,11 +1,12 @@
 // HTML Preview Anywhere — GitLab 모드 (gitlab.com 및 self-hosted)
 // 1) blob 페이지: .html 파일이면 소스 대신 렌더링 (우측 상단 플로팅 바)
-// 2) commit / MR diff 페이지: .html 파일마다 헤더에 "미리보기" 버튼 → 변경 후/전 렌더링
-// 렌더링은 공통 모듈(preview.js)의 격리 뷰어에서 한다.
+// 2) commit / MR diff 페이지: .html/.md 파일마다 헤더에 "미리보기" 버튼 → 변경 후/전 렌더링
+//    (blob 페이지는 .html 만 — .md 는 GitLab 이 이미 렌더링해 준다)
+// 렌더링은 공통 모듈(preview.js)의 격리 뷰어에서 한다. .md 는 뷰어가 raw URL 확장자를 보고 변환한다.
 window.__ghpGitLab = () => {
   const { makeFrame, openInNewTab, button, toggleFullscreen, fetchText, fetchJson } = window.__ghp;
   const MODE_KEY = "ghp:mode"; // blob 페이지 기본 모드: "preview" | "source"
-  const HTML_RE = /\.html?$/i;
+  const PREVIEW_RE = /\.(html?|md|markdown)$/i;
   const CONTENT_SELECTORS = [
     '[data-testid="blob-viewer-file-content"]',
     ".blob-viewer",
@@ -141,7 +142,7 @@ window.__ghpGitLab = () => {
   function diffMount(file) {
     file.dataset.ghp = "1";
     const path = diffFilePath(file);
-    if (!path || !HTML_RE.test(path)) return;
+    if (!path || !PREVIEW_RE.test(path)) return;
 
     const header =
       file.querySelector(".js-file-title, .file-title, .file-title-flex-parent, [data-testid='file-title']") ||

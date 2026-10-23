@@ -12,13 +12,13 @@ window.__ghp = window.__ghp || (() => {
   const roots = new WeakMap();   // 우리가 그려 준 뷰어 window → 처음 연 문서의 원본 URL
 
   const dirOf = (u) => u.pathname.slice(0, u.pathname.lastIndexOf("/") + 1);
-  // 뷰어 안 링크로 이 자리에서 다시 그려도 되는 주소: 처음 연 문서와 같은 origin, 같은 폴더(또는 아래)의 .html.
+  // 뷰어 안 링크로 이 자리에서 다시 그려도 되는 주소: 처음 연 문서와 같은 origin, 같은 폴더(또는 아래)의 .html/.md.
   // 렌더링된 HTML 이 로그인 쿠키로 아무 주소나 읽어 가지 못하게 부모 쪽에서 다시 확인한다.
   function canNavigate(url, root) {
     try {
       const u = new URL(url), b = new URL(root);
       return u.origin === b.origin && /^https?:$/.test(u.protocol) &&
-        /\.html?$/i.test(u.pathname) && u.pathname.startsWith(dirOf(b));
+        /\.(html?|md|markdown)$/i.test(u.pathname) && u.pathname.startsWith(dirOf(b));
     } catch { return false; }
   }
 
@@ -45,13 +45,14 @@ window.__ghp = window.__ghp || (() => {
     }
   });
   // base: 이 HTML 의 원본 URL, root: 링크로 옮겨 다닐 수 있는 범위의 기준 (처음 연 문서)
-  function send(win, html, base = null, root = base) {
+  // md: Markdown 소스 — 뷰어가 HTML 로 변환해 그린다. URL 이 .md 면 뷰어가 알아서 알므로, 원본 URL 이 없는 텍스트 블록에서만 쓴다.
+  function send(win, html, base = null, root = base, md = false) {
     if (!win) return;
     viewers.add(win);
     if (root) roots.set(win, root);
     else roots.delete(win);
-    if (ready.has(win)) win.postMessage({ type: "ghp-render", html, base, root }, "*");
-    else pending.set(win, { html, base, root });
+    if (ready.has(win)) win.postMessage({ type: "ghp-render", html, base, root, md }, "*");
+    else pending.set(win, { html, base, root, md });
   }
 
   // 패널용 격리 iframe. render(html) 은 뷰어가 준비되는 대로 전달된다. 다시 그리려면 reset() 후 render().
@@ -65,13 +66,13 @@ window.__ghp = window.__ghp || (() => {
     return {
       iframe,
       reset,
-      render: (html, base) => { if (rendered) reset(); rendered = true; send(iframe.contentWindow, html, base); }, // 두 번째부터는 뷰어를 새로 띄워서 그린다
+      render: (html, base, md) => { if (rendered) reset(); rendered = true; send(iframe.contentWindow, html, base, base, md); }, // 두 번째부터는 뷰어를 새로 띄워서 그린다
     };
   }
   // base: 그 HTML 의 원본 URL. 뷰어가 상대경로 링크·이미지를 이 주소 기준으로 푼다.
-  function openInNewTab(html, base) {
+  function openInNewTab(html, base, md) {
     const w = window.open(VIEWER, "_blank");
-    if (w) send(w, html, base);
+    if (w) send(w, html, base, base, md);
   }
   function button(label, onClick) {
     const b = document.createElement("button");

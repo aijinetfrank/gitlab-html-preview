@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "HTML Preview Anywhere",
-  "version": "2.1.0",
-  "description": "Render HTML source found on any page (code blocks, pasted markup, .html links, GitLab blobs & diffs) in an isolated sandbox. Toggle per site from the toolbar icon, or add site patterns in options.",
+  "version": "2.2.0",
+  "description": "Render HTML & Markdown source found on any page (code blocks, pasted markup, .html/.md links, GitLab blobs & diffs) in an isolated sandbox. Toggle per site from the toolbar icon, or add site patterns in options.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

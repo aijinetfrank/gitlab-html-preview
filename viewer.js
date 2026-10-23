@@ -6,7 +6,7 @@
 // 링크: 문서 주소가 chrome-extension://…/viewer.html 이라 그냥 두면 상대경로가 확장 안으로 풀린다.
 // 원본 URL(base)을 <base> 로 넣고, 클릭은 직접 처리한다.
 //  - #앵커        → 이 문서 안에서 스크롤
-//  - 처음 연 문서와 같은 폴더(또는 아래)의 .html → 부모에게 부탁해 이 자리에서 다시 그린다 (ghp-navigate)
+//  - 처음 연 문서와 같은 폴더(또는 아래)의 .html/.md → 부모에게 부탁해 이 자리에서 다시 그린다 (ghp-navigate)
 //  - 그 밖의 http(s) → 새 탭 (GitLab raw 주소는 blob 페이지로 바꿔서 연다)
 (() => {
   const target = window.opener || (window.parent !== window ? window.parent : null);
@@ -14,6 +14,48 @@
   let started = false;
   let base = null;
   let root = null;
+
+  // ---------- Markdown ----------
+  // marked.min.js (viewer.html 에서 먼저 로드). document.open() 이후에도 쓰도록 지금 잡아 둔다.
+  const markedLib = window.marked || null;
+  const MD_URL = /\.(md|markdown)$/i;
+  const isMdUrl = (u) => { try { return MD_URL.test(new URL(u).pathname); } catch { return false; } };
+  const escHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const MD_CSS = `
+:root{color-scheme:light dark}
+body{margin:0;background:#fff;color:#1f2328;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.md{max-width:860px;margin:0 auto;padding:32px 24px 64px;word-wrap:break-word}
+.md h1,.md h2{padding-bottom:.3em;border-bottom:1px solid #d8dee4}
+.md h1{font-size:1.9em}.md h2{font-size:1.5em}.md h3{font-size:1.2em}
+.md a{color:#0969da}
+.md code{background:#eff1f3;border-radius:4px;padding:.15em .35em;font-size:.875em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.md pre{background:#f6f8fa;border-radius:8px;padding:14px 16px;overflow:auto;line-height:1.5}
+.md pre code{background:none;padding:0}
+.md blockquote{margin:0 0 16px;padding:0 1em;color:#59636e;border-left:4px solid #d8dee4}
+.md table{border-collapse:collapse;display:block;overflow:auto;max-width:100%}
+.md th,.md td{border:1px solid #d8dee4;padding:6px 13px}
+.md tr:nth-child(2n){background:#f6f8fa}
+.md img{max-width:100%}
+.md hr{border:0;border-top:1px solid #d8dee4;margin:24px 0}
+@media(prefers-color-scheme:dark){
+body{background:#0d1117;color:#e6edf3}
+.md h1,.md h2{border-color:#30363d}
+.md a{color:#4493f8}
+.md code{background:#2a313c}
+.md pre{background:#161b22}
+.md blockquote{color:#9198a1;border-color:#30363d}
+.md th,.md td{border-color:#30363d}
+.md tr:nth-child(2n){background:#161b22}
+.md hr{border-color:#30363d}
+}`;
+  // Markdown 소스 → 완결된 HTML 문서. 변환 결과도 다른 HTML 과 똑같이 이 격리 문서에서만 산다.
+  // breaks: 문단 안 단일 줄바꿈도 <br> 로 살린다 — 훅·AI 가 뽑은 md 는 줄바꿈이 의미인 경우가 많다 (diffstat 등).
+  function mdToDoc(src) {
+    let body = null;
+    try { body = markedLib?.parse(src, { gfm: true, breaks: true }); } catch { /* 아래 fallback */ }
+    if (typeof body !== "string") body = `<pre>${escHtml(src)}</pre>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${MD_CSS}</style></head><body><main class="md">${body}</main></body></html>`;
+  }
 
   const escAttr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   function withBase(html, url) {
@@ -28,7 +70,7 @@
   function inPlace(url) {
     if (!root) return false;
     const b = new URL(root);
-    return url.origin === b.origin && /\.html?$/i.test(url.pathname) && url.pathname.startsWith(dirOf(b));
+    return url.origin === b.origin && /\.(html?|md|markdown)$/i.test(url.pathname) && url.pathname.startsWith(dirOf(b));
   }
   // 새 탭은 패널이면 부모(호스트 페이지)가 연다. 격리된 뷰어(origin null)가 직접 열면 브라우저가
   // 다른 사이트에서 온 이동으로 보고 SameSite=Strict 로그인 쿠키를 빼서, 열린 GitLab 이 로그인을 다시 요구한다.
@@ -74,9 +116,10 @@
     else openTab(forTab(url.href));
   }
 
-  function render(html, url, rootUrl) {
+  function render(html, url, rootUrl, md) {
     base = typeof url === "string" ? url : null;
     root = typeof rootUrl === "string" ? rootUrl : base;
+    if (md === true || (base && isMdUrl(base))) html = mdToDoc(html);
     document.open();
     document.write(withBase(html, base));
     document.close();
@@ -91,7 +134,7 @@
     const d = e.data;
     if (!d || d.type !== "ghp-render" || typeof d.html !== "string") return;
     started = true;
-    render(d.html, d.base, d.root);
+    render(d.html, d.base, d.root, d.md);
   }
   window.addEventListener("message", onMessage);
 
