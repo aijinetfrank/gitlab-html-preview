@@ -7,7 +7,7 @@
 // 모든 확장 API 호출은 실패해도 서비스 워커 에러로 남지 않도록 감싼다 (닫힌 탭, 권한 거부 등).
 
 // 순서 중요: 공통 → 모드별 → 진입점
-const SCRIPTS = ["preview.js", "gitlab.js", "generic.js", "main.js"];
+const SCRIPTS = ["preview.js", "gitlab.js", "generic.js", "confluence.js", "main.js"];
 const CSS = ["content.css"];
 const SCRIPT_ID = "ghp";
 const patternFor = (origin) => origin + "/*";

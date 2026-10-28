@@ -85,8 +85,12 @@ window.__ghp = window.__ghp || (() => {
     if (document.fullscreenElement) document.exitFullscreen();
     else el.requestFullscreen?.();
   }
+  // 같은 origin 이면 "same-origin": 로그인 쿠키는 그대로 붙고, 다른 호스트로 리다이렉트돼도
+  // (Confluence 첨부 → api.media.atlassian.com, 응답이 Access-Control-Allow-Origin: *) 읽을 수 있다.
+  // "include" 는 와일드카드 CORS 응답을 거부한다.
   async function fetchText(url) {
-    const res = await fetch(url, { credentials: "include" });
+    const sameOrigin = new URL(url, location.href).origin === location.origin;
+    const res = await fetch(url, { credentials: sameOrigin ? "same-origin" : "include" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.text();
   }
@@ -100,6 +104,8 @@ window.__ghp = window.__ghp || (() => {
     !!document.querySelector('meta[property="og:site_name"][content="GitLab"], meta[content="GitLab"][property="og:site_name"]') ||
     /^GitLab\b/.test(document.querySelector('meta[name="description"]')?.content || "") ||
     !!document.querySelector('body.gl-dark, body[data-page^="projects:"], .js-gitlab-root, meta[name="gitlab-"]');
+  // Confluence Cloud 인지 (*.atlassian.net/wiki)
+  const isConfluence = () => location.hostname.endsWith(".atlassian.net") && location.pathname.startsWith("/wiki/");
 
-  return { makeFrame, openInNewTab, button, toggleFullscreen, fetchText, fetchJson, isGitLab };
+  return { makeFrame, openInNewTab, button, toggleFullscreen, fetchText, fetchJson, isGitLab, isConfluence };
 })();
