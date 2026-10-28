@@ -11,6 +11,7 @@ window.__ghpGeneric = () => {
   const HTML_START = /^\s*(<!doctype\s+html|<html[\s>]|<head[\s>]|<meta\s+charset)/i;
   const HTML_HINT = /<!doctype\s+html|<html[\s>]|<head[\s>]|<meta\s+charset/i;
   const FILE_LINK = /\.(html?|md|markdown)$/i;
+  const ATTACHMENTS_PAGE = /\/viewpageattachments\.action\b/; // Confluence 첨부 목록 페이지
   // Markdown 은 시작 태그 같은 확실한 신호가 없어 표식(제목·목록·인용·코드펜스·링크·굵게)을 센다.
   // 코드 블록(pre/code) 안에서만 본다 — 일반 텍스트까지 보면 오탐이 너무 많다.
   const MD_HEAD = /^\s{0,3}#{1,6}\s/;
@@ -153,8 +154,10 @@ window.__ghpGeneric = () => {
     // 다른 후보 안에 들어 있는 후보는 버린다 (여러 줄 메시지에서 둘째 줄이 따로 잡히는 경우)
     const arr = Array.from(text);
     const outer = arr.filter((c) => !arr.some((o) => o !== c && o.contains(c)));
-    // (c) .html 링크
-    const links = Array.from(root.querySelectorAll("a[href]")).filter((a) => !a.closest(SKIP) && linkFileName(a));
+    // (c) .html 링크. Confluence 첨부 링크(viewpageattachments.action?preview=…)는 뺀다 —
+    //     가리키는 건 파일이 아니라 첨부 목록 페이지이고, 누르면 뜨는 미디어 뷰어에 미리보기가 붙는다 (confluence.js)
+    const links = Array.from(root.querySelectorAll("a[href]"))
+      .filter((a) => !a.closest(SKIP) && !ATTACHMENTS_PAGE.test(a.href) && linkFileName(a));
     return { text: outer, links };
   }
 

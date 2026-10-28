@@ -120,6 +120,19 @@
 /* 소스 보기 상태: 블록 앞 높이 0 기준점 + 그 우측 상단에 "미리보기" (패널 버튼과 같은 자리) */
 .ghp-anchor { position: relative; height: 0; overflow: visible; }
 .ghp-anchor .ghp-bar-inline { opacity: 1; }
+/* Confluence 미디어 뷰어: 머리말 아래를 덮는다 (top 은 머리말 높이로 스크립트가 정한다) */
+.ghp-wrap.ghp-confluence {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  z-index: 2147483000;
+  border: 0;
+  border-radius: 0;
+}
 /* .html 링크 뒤 버튼 */
 .ghp-wrap.ghp-link {
   display: inline;

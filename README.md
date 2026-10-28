@@ -24,7 +24,7 @@ Markdown 은 동봉한 [marked](https://github.com/markedjs/marked)(v15, GFM)로
 
 ### 모드는 자동으로 고른다
 
-페이지를 읽을 때 GitLab 인스턴스(gitlab.com, self-hosted 모두)면 **GitLab 모드**, 아니면 **범용 모드**로 동작한다.
+페이지를 읽을 때 GitLab 인스턴스(gitlab.com, self-hosted 모두)면 **GitLab 모드**, 아니면 **범용 모드**로 동작한다. Confluence Cloud 면 범용 모드에 **첨부 파일 미리보기**가 더해진다.
 
 ### 범용 모드 (Google Chat, 위키, 이슈 트래커 등)
 
@@ -45,6 +45,20 @@ Markdown 은 동봉한 [marked](https://github.com/markedjs/marked)(v15, GFM)로
 | 소스 보기 | 미리보기 | 그 블록을 다시 읽어 렌더링한다 |
 
 패널 높이는 원래 소스 블록의 높이(최소 240px, 최대 화면의 85%)를 따른다. 캐시는 없다. SPA 라서 DOM 변화를 감시하며, 사이트가 메시지를 다시 그리면 패널도 따라 다시 붙는다.
+
+#### Confluence Cloud 첨부 파일
+
+Confluence Cloud(`*.atlassian.net/wiki`)에서는 페이지의 `.html` / `.htm` **첨부 파일**을 누르면 뜨는 미디어 뷰어 안에서 바로 렌더링한다. Confluence 는 HTML 첨부를 소스 코드로만 보여주는데, 그 위를 렌더링으로 덮는다.
+
+| 버튼 | 동작 |
+|---|---|
+| 소스 보기 / 미리보기 | 렌더링 ↔ Confluence 원래 소스 코드 뷰 토글 |
+| 전체화면 | 렌더링 영역을 전체화면으로 (ESC로 해제) |
+| 새 탭 | 렌더링 결과를 격리된 새 탭에 연다 |
+
+파일은 페이지 id 와 뷰어의 파일명으로 `/wiki/download/attachments/<pageId>/<파일명>` 에서 읽는다. 이 주소는 파일 서버(`api.media.atlassian.com`)로 리다이렉트되므로 같은 origin 요청은 `credentials: "same-origin"` 으로 보낸다 (`include` 는 그 서버의 와일드카드 CORS 응답을 거부한다). 첨부 목록 페이지로 가는 링크(`viewpageattachments.action?preview=…`)에는 범용 모드의 미리보기 버튼을 붙이지 않는다.
+
+페이지(`/pages/<id>`)와 첨부 목록 화면만 대상이다 — 블로그 글·편집 화면에서는 동작하지 않는다. Data Center / Server 는 검증하지 않았다.
 
 ### GitLab 모드
 
@@ -95,10 +109,11 @@ raw 엔드포인트는 HTML을 `text/plain`으로 내려주므로 상대경로 �
 | `manifest.json` | MV3. 고정 호스트 없음, `optional_host_permissions` + `scripting` + `activeTab` + `storage` |
 | `background.js` | 패턴 목록 → content script 재등록(`scripting.registerContentScripts`), 아이콘 클릭 토글, `ON` 배지 |
 | `options.html` / `options.js` | 켜진 사이트 패턴 목록 편집 |
-| `preview.js` | 공통: 격리 뷰어 iframe / 새 탭, 버튼, fetch, GitLab 감지 |
+| `preview.js` | 공통: 격리 뷰어 iframe / 새 탭, 버튼, fetch, GitLab·Confluence 감지 |
 | `gitlab.js` | GitLab 모드 (blob / diff) |
 | `generic.js` | 범용 모드 |
-| `main.js` | 진입점: GitLab 이면 `gitlab.js`, 아니면 `generic.js` |
+| `confluence.js` | Confluence Cloud 첨부 파일 (미디어 뷰어) |
+| `main.js` | 진입점: GitLab 이면 `gitlab.js`, 아니면 `generic.js` (+ Confluence 면 `confluence.js`) |
 | `viewer.html` / `viewer.js` | 샌드박스 뷰어 (Markdown → HTML 변환 포함) |
 | `marked.min.js` | Markdown 파서 (marked v15.0.7, MIT) — 뷰어에서만 로드 |
 | `content.css` | 공통 스타일 |
